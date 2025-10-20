@@ -257,7 +257,79 @@ async function getData() {
 }
 getData();
 ```
+8. Promises
+- A Promise is an object that represents the eventual completion (or failure) of an asynchronous operation.
+- Think of it like a "container for a future value".
+- It helps manage async code in a cleaner, structured way instead of relying on callbacks (which led to "callback hell").
 
+<b>Syntax:</b>
+```javascript
+let promise = new Promise((resolve, reject) => {
+    // async operation
+    if (success) {
+        resolve("Operation successful");
+    } else {
+        reject("Something went wrong");
+    }
+});
+```
+
+### States
+1) Pending → Initial state, operation not completed.
+2) Fulfilled → The operation completed successfully (resolve() called).
+3) Rejected → The operation failed (reject() called).
+
+### Why Promises?
+- Solve callback hell (nested callbacks).
+- Provide a chainable way to handle multiple async tasks.
+- Improve readability and error handling.
+
+### Consuming Promises
+We consume promises using .then(), .catch(), and .finally():
+```javascript
+promise.then(result => console.log("Fulfilled:", result))  // runs if resolved
+  .catch(error => console.error("Rejected:", error))  // runs if rejected
+  .finally(() => console.log("Always runs"));        // runs no matter what
+```
+
+### :pushpin: Promise Chaining
+- Each .then() returns a new promise. The returned promise gets resolved with the return value of the callback inside .then(). This allows sequential execution of async tasks.
+- If any .then() throws an error, the chain jumps to the nearest .catch().
+- If you return another Promise inside .then(), the chain will wait until that promise settles.
+
+#### Example:
+```javascript
+new Promise((resolve, reject) => {
+    setTimeout(() => resolve(10), 1000);
+})
+.then(result => {
+    console.log("Step 1:", result);
+    return result * 2;
+})
+.then(result => {
+    console.log("Step 2:", result);
+    return result * 3;
+})
+.then(result => {
+    console.log("Step 3:", result);
+});
+
+// Output:
+Step 1: 10
+Step 2: 20
+Step 3: 60
+```
+
+### Promise concurrency (4 static methods)
+The Promise class offers four static methods to facilitate async task concurrency. All these methods take an iterable of promises and return a new promise.
+ 
+| Promise Method | Behavior Summary | Resolves When | Rejects When | Return Type |
+|----------------|------------------|----------------|----------------|--------------|
+| **Promise.all()** | :arrow_right: Waits for **all promises** to succeed in sequence (order of definition, not timing). | All promises **fulfilled** | Any one **rejects** | :white_check_mark: `Array` of resolved values <br>e.g., `[1, "Hello"]` |
+| **Promise.allSettled()** | :arrow_right: Waits for **all promises to settle** (fulfilled or rejected). <br>Never rejects overall. | When all **settle** | :x: Never | :receipt: `Array` of result objects → `{status, value/reason}` |
+| **Promise.race()** | :arrow_right: Returns result of **first settled** promise (fulfilled or rejected). <br>:zap: For `setTimeout()`, the one with **lower delay** wins. | First **fulfilled or rejected** | Same (if first rejects) | :dart: Single value/reason <br>e.g., `"Fast!"` |
+| **Promise.any()** | :arrow_right: Returns **first fulfilled** promise (ignores rejections). <br>:zap: Behaves like `.race()` for timing but **ignores early rejects**. | First **fulfilled** | All **reject** → throws `AggregateError` | :dart: Single fulfilled value <br>e.g., `"Success!"` |
+| **Edge Cases** | `Promise.race([])` → :hourglass_flowing_sand: *Never resolves/rejects* <br>`Promise.any([])` → :x: *Throws AggregateError* | — | — | — |
 ---
 
 ## ⚠️ Error Handling
